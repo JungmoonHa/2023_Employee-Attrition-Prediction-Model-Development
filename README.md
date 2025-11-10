@@ -1,5 +1,4 @@
 # Employee Attrition Prediction Project  
-(퇴사 여부 예측 모델 개발)
 
 **PCA + K-Means + Logistic Regression + Decision Tree + Random Forest + AdaBoost**
 
@@ -22,9 +21,7 @@ Variables include job satisfaction, performance evaluation, project count, work 
 
 ---
 
----
-
-## 📊 Dataset Summary
+## Dataset Summary
 
 The dataset consists of 14,999 employee records with the following features:
 
