@@ -1,101 +1,128 @@
 # Employee Attrition Prediction Project  
-Predicting employee resignation using PCA, K-Means clustering, and multiple supervised ML models.
+(퇴사 여부 예측 모델 개발)
+
+**PCA + K-Means + Logistic Regression + Decision Tree + Random Forest + AdaBoost**
 
 ---
 
 ## Overview  
-This project predicts **employee attrition (resign=1)** using a combination of unsupervised and supervised machine learning techniques.
+
+This project aims to predict **employee attrition (resign=1)** using a combination of unsupervised and supervised machine-learning techniques.  
+
+The workflow includes:
+
+- Exploratory Data Analysis (EDA)
+- Principal Component Analysis (PCA)
+- K-Means clustering
+- Classification modeling: Logistic Regression, Decision Tree, Random Forest, AdaBoost
+- Performance comparison via **F1 score** and **Precision–Recall AUC**
+
+**Dataset:** (14,999 rows × 9 variables)  
+Variables include job satisfaction, performance evaluation, project count, work hours, tenure, accident history, promotion history, and target label (`resign`).
 
 ---
 
-## Project Workflow  
-1. Exploratory Data Analysis (EDA)  
-2. PCA dimensionality reduction  
-3. K-Means clustering  
-4. Logistic Regression / Decision Tree / Random Forest / AdaBoost  
-5. Model performance evaluation via F1 score & Precision–Recall AUC  
+---
+
+## 📊 Dataset Summary
+
+The dataset consists of 14,999 employee records with the following features:
+
+- `satisfaction`: Job satisfaction level (0–1 scale)
+- `evaluation`: Performance evaluation score
+- `project`: Number of projects completed
+- `workhour`: Average monthly work hours
+- `years`: Years at company
+- `accident`: Whether the employee had an accident
+- `promotion`: Promotion within last 5 years
+- `resign`: Attrition status (0=stay, 1=leave)
+- `good`: Additional indicator column (removed in preprocessing)
 
 ---
 
-## Dataset  
-- Records: 14,999  
-- Features: 9 variables  
-- Target: `resign` (0=stay, 1=leave)
+## 1. Principal Component Analysis (PCA)
 
----
+### ✔ Feature Preparation
+- Target variable separated (`resign`)
+- 7 feature variables scaled using `StandardScaler`
 
-## Dataset Preview
-- satisfaction | evaluation | project | workhour | years | accident | resign | promotion | good
+### ✔ PCA Transformation
+- Reduced 7 features → **3 principal components**
+- Explained variance ratio:
+  - PC1: 26.1%
+  - PC2: 16.1%
+  - PC3: 15.1%
+- Total variance explained: **57.3%**
 
-**Add screenshot here**  
-`![Dataset Preview](images/dataset.png)`
+### ✔ PCA Loadings Interpretation
 
----
-
-## 1. PCA Analysis
-
-### PCA Results
-- Reduced 7 features → 3 principal components  
-- Total explained variance: **57.3%**
-
-**PCA Explained Variance Ratio**
-`![PCA Variance](images/pca_variance.png)`
-
-### PCA 3D Visualization
-Points are colored by attrition status.
-
-`![PCA 3D Scatter](images/pca_3d.png)`
+- **PC1**: Driven by evaluation, project count, work hour, tenure  
+- **PC2**: Higher when satisfaction, project count, and work hours are low  
+- **PC3**: Higher when tenure is long, promotion=1, satisfaction and evaluation are low  
 
 ---
 
 ## 2. K-Means Clustering
 
-### Choosing K  
-SSE (Elbow Method) suggests **K=5**
+### ✔ SSE-based selection
+Elbow method applied for K=1–9  
+Chosen **K=5** based on SSE flattening.
 
+### ✔ Cluster Assignment  
+Cluster labels added to dataset as `cluster_kM`.
 
-`![Elbow Method](images/elbow_method.png)`
-
-### Cluster Distribution
+### ✔ Cluster-wise Attrition Ratio
 
 | Cluster | Attrition Ratio |
-|--------|-----------------|
-| 0 | 3.7% |
-| 1 | 56.6% |
-| 2 | 45.6% |
-| 3 | 5.9% |
-| 4 | 6.5% |
+|---------|-----------------|
+| 0       | 3.7%            |
+| 1       | 56.6%           |
+| 2       | 45.6%           |
+| 3       | 5.9%            |
+| 4       | 6.5%            |
 
-
-`![PCA + Cluster Overlay](images/pca_cluster_overlay.png)`
+Clusters **1** and **2** contain high attrition groups (~50% leaving).
 
 ---
 
-## 3. Classification Models
+## 3. Classification Modeling
 
-### Models Trained  
-- Logistic Regression  
-- Decision Tree (5-fold CV tuned)  
-- Random Forest (5-fold CV tuned)  
-- AdaBoost (5-fold CV tuned)  
+Data split: **80% train / 20% test**
+
+### Models Trained
+1. Logistic Regression  
+2. Decision Tree + `GridSearchCV` (5-fold CV)  
+3. Random Forest + `GridSearchCV` (5-fold CV)  
+4. AdaBoost + `GridSearchCV` (5-fold CV)  
 
 ---
 
 ## 3-1. Logistic Regression
 
-Coefficients plot:  
-`![LR Coefficients](images/lr_coef.png)`
+- Penalty: None  
+- Requires scaled features  
+
+Coefficient summary indicates:
+
+- Lower satisfaction strongly associated with attrition  
+- Longer tenure increases likelihood of resignation  
+- More projects and higher work hours also increase resignation risk  
 
 ---
 
 ## 3-2. Decision Tree
 
-Best hyperparameters:
+Hyperparameters tuned via grid search:
 - max_depth = 5
 - min_samples_split = 300
 
-  📷 Decision Tree plot:  
-`![Decision Tree](images/decision_tree.png)`
+Feature importance:
+
+1. satisfaction (53.2%)
+2. years
+3. evaluation
+4. project
+5. workhour
 
 ---
 
@@ -106,18 +133,15 @@ Best hyperparameters:
 - max_depth = 5
 - min_samples_split = 300
 
-Feature importance:  
-`![RF Feature Importance](images/rf_importance.png)`
+Feature importance ranking differs slightly from Decision Tree, but **satisfaction remains the most important factor**.
 
 ---
 
-## 3-4. AdaBoost  
+## 3-4. AdaBoost
 
+Uses depth-1 decision stumps  
 Best hyperparameter:
 - n_estimators = 30
-
-AdaBoost importance:  
-`![AdaBoost Feature Importance](images/ada_importance.png)`
 
 ---
 
@@ -125,40 +149,43 @@ AdaBoost importance:
 
 ### F1 Score
 
-| Model | F1 Score |
-|-------|----------|
-| Logistic Regression | 0.33 |
-| Decision Tree | **0.943** |
-| Random Forest | 0.941 |
-| AdaBoost | 0.919 |
+| Model               | F1 Score |
+|--------------------|----------|
+| Logistic Regression | 0.33     |
+| Decision Tree       | **0.943** |
+| Random Forest       | 0.941    |
+| AdaBoost            | 0.919    |
 
-
-`![F1 Comparison](images/f1_scores.png)`
+---
 
 ### Precision–Recall AUC
 
-| Model | PR-AUC |
-|-------|----------|
-| Logistic Regression | 0.49 |
-| Decision Tree | 0.966 |
-| Random Forest | **0.967** |
-| AdaBoost | 0.96 |
-
-
-`![PR Curve](images/pr_curves.png)`
+| Model               | AUC       |
+|--------------------|-----------|
+| Logistic Regression | 0.49      |
+| Decision Tree       | 0.966     |
+| Random Forest       | **0.967** |
+| AdaBoost            | 0.96      |
 
 ---
 
-## Best Models
+## Best Model & Interpretation  
 
-- **Decision Tree** → best F1 score  
-- **Random Forest** → best PR-AUC  
+- **Best F1 Score:** Decision Tree  
+- **Best Precision–Recall AUC:** Random Forest  
 
-### Why Random Forest performs best
+### Why Random Forest performs best:
 
-- Captures non-linear relationships  
-- Reduces overfitting via bagging  
-- Random feature selection → de-correlated trees  
-- Highly stable on HR/tabular data  
+- Handles non-linear feature interactions well  
+- Reduces variance via bootstrap aggregation  
+- Introduces randomness in feature selection → de-correlated trees  
+- Avoids overfitting common in single decision trees  
+- Stable and robust for tabular HR datasets  
 
 ---
+
+## Final Notes
+
+- Job satisfaction is the strongest predictor across all models  
+- Clustering revealed meaningful segmentation of employee groups  
+- Ensemble models outperform linear methods for this dataset
